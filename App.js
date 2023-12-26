@@ -1,4 +1,4 @@
-import React, { useState } from "react"; 
+import React, { useState, Component } from "react"; 
 import { 
 	View, 
 	Text, 
@@ -13,7 +13,8 @@ import {
 const toDoApp = () => { 
 	const [inputTask, setInputTask] = useState(""); 
 	const [Tasks, setTasks] = useState([]); 
-	const [editIndex, setEditIndex] = useState(-1); 
+	const [editIndex, setEditIndex] = useState(-1);
+	const [taskStatus , setTaskStatus] = useState([]);
 
 
 	const addTask = () => {
@@ -21,7 +22,7 @@ const toDoApp = () => {
 			//もし入力したタスクが無いなら
 			if(editIndex === -1){
 				setTasks([...Tasks, inputTask]);
-
+				setTaskStatus([...taskStatus, false]);
 			}
 			else {
 				//そうでなければ(タスクが1つでもあるなら)
@@ -39,7 +40,7 @@ const toDoApp = () => {
 	const editTask = (index) => {
 		//編集したいタスクの値を取得
 		const taskToEdit = Tasks[index];
-		//その値を編集した値で書き換える
+		//その値を編集した値で書き換え
 		setInputTask(taskToEdit);
 		//インデックスをセットする
 		setEditIndex(index);
@@ -54,7 +55,12 @@ const toDoApp = () => {
 		//削除したタスクをセットする(反映させる)
 		setTasks(taskToDelete);
 	}
-	
+
+	const doneTask = (index) => {
+		const updatedStatus = [...taskStatus]; // 現在のタスクの完了、未完了状態をコピー
+        updatedStatus[index] = !updatedStatus[index]; // 完了状態、未完了状態を変更する
+        setTaskStatus(updatedStatus); // 完了、未完了状態を更新
+	};
 
 	/*タスク追加ボタンを三項演算子ではなくif文で変化させようとした残骸です
 	const judgeAddButtonText = (editIndex) => {
@@ -91,8 +97,10 @@ const toDoApp = () => {
 
 
 	const renderItem = ({ item, index }) => (
+			//doneTaskが実行され、trueの場合、itemの色を"#ccc"にする
 			<View style={styles.task}>
-				<Text style={styles.itemList}>{item}</Text>
+				<input type="checkbox" styles={styles.checkbox} onChange={() => doneTask(index)}></input>
+				<Text style={[styles.itemList, { color: taskStatus[index] ? "#ccc" : "black" }]}>{item}</Text>
 				<View style={styles.taskButtons}>
 					<TouchableOpacity onPress={() => editTask(index)}>
 						<Text style={styles.editButton}>編集</Text>
