@@ -1,4 +1,7 @@
-import React, { useState, Component } from "react"; 
+import React, { useState, useEffect	} from "react"; 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CheckBox from "@react-native-community/checkbox";
+import Checkbox from "expo-checkbox";
 import { 
 	View, 
 	Text, 
@@ -12,26 +15,54 @@ import {
 
 const toDoApp = () => { 
 	const [inputTask, setInputTask] = useState(""); 
-	const [Tasks, setTasks] = useState([]); 
+	const [tasks, setTasks] = useState([]); 
 	const [editIndex, setEditIndex] = useState(-1);
 	const [taskStatus , setTaskStatus] = useState([]);
+
+	
+	useEffect(() => {
+		// アプリを起動させたときにローカルストレージからタスクを読み込む
+		getData();
+	}, []);
+	
+	const storeData = async (value) => {
+    try {
+		await  AsyncStorage.setItem("keyOfTasks", JSON.stringify(value));
+		} catch (error) {
+		console.log("Error storing data: ", error);
+		}
+	};
+	
+	const getData = async () => {
+		try {
+		const storedTasks = await AsyncStorage.getItem("keyOfTasks");
+		if (storedTasks !== null) {
+			setTasks(JSON.parse(storedTasks));
+		}
+		} catch (error) {
+		console.log("Error retrieving data: ", error);
+		}
+	};
 
 
 	const addTask = () => {
 		if(inputTask){
+			let updatedTasks
 			//もし入力したタスクが無いなら
 			if(editIndex === -1){
-				setTasks([...Tasks, inputTask]);
+				updatedTasks = [...tasks, inputTask]
+				setTasks(updatedTasks);
 				setTaskStatus([...taskStatus, false]);
 			}
 			else {
 				//そうでなければ(タスクが1つでもあるなら)
-				const taskToUpdate = [...Tasks]; 
+				const taskToUpdate = [...tasks]; 
                 taskToUpdate[editIndex] = inputTask; 
-                setTasks(taskToUpdate); 
-                setEditIndex(-1); 
+				updatedTasks = taskToUpdate;
+				setTasks(updatedTasks);
+				setTaskStatus([...taskStatus, false]);
 			}
-			//入力欄の初期化
+			storeData(updatedTasks);
 			setInputTask("");
 		}
 	};
@@ -39,7 +70,7 @@ const toDoApp = () => {
 	
 	const editTask = (index) => {
 		//編集したいタスクの値を取得
-		const taskToEdit = Tasks[index];
+		const taskToEdit = tasks[index];
 		//その値を編集した値で書き換え
 		setInputTask(taskToEdit);
 		//インデックスをセットする
@@ -49,17 +80,18 @@ const toDoApp = () => {
 
 	const deleteTask = (index) => {
 		//タスクを全て取得
-		const taskToDelete = [...Tasks];
+		const taskToDelete = [...tasks];
 		//削除したいタスクをspliceで削除
 		taskToDelete.splice(index, 1);
 		//削除したタスクをセットする(反映させる)
 		setTasks(taskToDelete);
+		storeData(taskToDelete);
 	}
 
 	const doneTask = (index) => {
-		const updatedStatus = [...taskStatus]; // 現在のタスクの完了、未完了状態をコピー
-        updatedStatus[index] = !updatedStatus[index]; // 完了状態、未完了状態を変更する
-        setTaskStatus(updatedStatus); // 完了、未完了状態を更新
+		const updatedStatus = [...taskStatus]; // 現在のタスクの完了or未完了状態をコピー
+        updatedStatus[index] = !updatedStatus[index]; // 完了状態⇔未完了状態を切り替え
+        setTaskStatus(updatedStatus); //状態を更新
 	};
 
 	/*タスク追加ボタンを三項演算子ではなくif文で変化させようとした残骸です
@@ -97,9 +129,14 @@ const toDoApp = () => {
 
 
 	const renderItem = ({ item, index }) => (
+			//<CheckBox value={taskStatus} onValueChange={() => doneTask(index)}/>
+			/*上記は input type="checkbox" を CheckBox で実装しようとした残骸です。
+			webでは動作は問題ありませんでしたが、iosだとエラーを吐いたので修正しようとしましたが期限内にできませんでした。
+			大変申し訳ありません…*/
+
 			//doneTaskが実行され、trueの場合、itemの色を"#ccc"にする
 			<View style={styles.task}>
-				<input type="checkbox" styles={styles.checkbox} onChange={() => doneTask(index)}></input>
+				<input type="checkbox"  onChange={() => doneTask(index)}></input>
 				<Text style={[styles.itemList, { color: taskStatus[index] ? "#ccc" : "black" }]}>{item}</Text>
 				<View style={styles.taskButtons}>
 					<TouchableOpacity onPress={() => editTask(index)}>
@@ -131,7 +168,7 @@ const toDoApp = () => {
 		</TouchableOpacity>
 
 		<FlatList
-			data = {Tasks}
+			data = {tasks}
 			renderItem={renderItem}
 			keyExtractor={(item, index) => index.toString()}
 		/>
