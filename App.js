@@ -1,6 +1,7 @@
+<script src="http://localhost:8097"></script>
+
 import React, { useState, useEffect	} from "react"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import CheckBox from "@react-native-community/checkbox";
 import Checkbox from "expo-checkbox";
 import { 
 	View, 
@@ -136,7 +137,7 @@ const toDoApp = () => {
 
 			//doneTaskが実行され、trueの場合、itemの色を"#ccc"にする
 			<View style={styles.task}>
-				<input type="checkbox"  onChange={() => doneTask(index)}></input>
+				<Checkbox  onChange={() => doneTask(index)}/>
 				<Text style={[styles.itemList, { color: taskStatus[index] ? "#ccc" : "black" }]}>{item}</Text>
 				<View style={styles.taskButtons}>
 					<TouchableOpacity onPress={() => editTask(index)}>
