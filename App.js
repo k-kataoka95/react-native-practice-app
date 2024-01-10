@@ -3,6 +3,7 @@
 import React, { useState, useEffect	} from "react"; 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Checkbox from "expo-checkbox";
+import CheckBox from "react-native-check-box"
 import { 
 	View, 
 	Text, 
@@ -15,16 +16,16 @@ import {
 
 
 const toDoApp = () => { 
-	const [inputTask, setInputTask] = useState(""); 
-	const [tasks, setTasks] = useState([]); 
-	const [editIndex, setEditIndex] = useState(-1);
-	const [taskStatus , setTaskStatus] = useState([]);
+	const [inputTask, setInputTask] = useState(""); //タスクの入力欄
+	const [tasks, setTasks] = useState([]); 		//タスクを格納する配列
+	const [editIndex, setEditIndex] = useState(-1); //タスクを格納する配列のインデックス(タスクが一つもないときは-1となる)
+	const [taskStatus , setTaskStatus] = useState([]);	//各タスク欄のチェックボックスにチェックが入っているかどうか
 
 	
 	useEffect(() => {
 		// アプリを起動させたときにローカルストレージからタスクを読み込む
 		getData();
-	}, []);
+		}, []);
 	
 	const storeData = async (value) => {
     try {
@@ -105,8 +106,6 @@ const toDoApp = () => {
 	};
 	*/
 	
-
-
 	/*OSの種類によって文を変えて表示させようとした残骸です
 	const Platform = props => {
 		return (
@@ -130,12 +129,10 @@ const toDoApp = () => {
 
 
 	const renderItem = ({ item, index }) => (
-			//<CheckBox value={taskStatus} onValueChange={() => doneTask(index)}/>
-			/*上記は input type="checkbox" を CheckBox で実装しようとした残骸です。
-			webでは動作は問題ありませんでしたが、iosだとエラーを吐いたので修正しようとしましたが期限内にできませんでした。
-			大変申し訳ありません…*/
-
 			//doneTaskが実行され、trueの場合、itemの色を"#ccc"にする
+
+			//"expo-checkbox"はboolean型で動くため、taskStatus[index]、つまり配列だと正常に動かない可能性が高い
+			//それを無理矢理配列で動かしているため、挙動が意図したものと違う可能性がある
 			<View style={styles.task}>
 				<Checkbox  onChange={() => doneTask(index)}/>
 				<Text style={[styles.itemList, { color: taskStatus[index] ? "#ccc" : "black" }]}>{item}</Text>
